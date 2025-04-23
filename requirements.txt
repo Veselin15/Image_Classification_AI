@@ -1,0 +1,8 @@
+numpy
+pandas
+Django>=4.2
+gunicorn
+psycopg2-binary
+opencv-python
+PyWavelets
+seaborn
