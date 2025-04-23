@@ -2,14 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Upload Image</title>
 </head>
 <body>
-    <h2>Upload an Image</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-</form>
+    <h2>{% if guest %}Guest Upload{% else %}Upload an Image{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+
+    <br>
+    {% if guest %}
+        <p>You are uploading as a guest. You will not have a profile associated with this upload.</p>
+    {% else %}
+        <p>Logged in as: {{ profile.username }}</p>
+    {% endif %}
 </body>
 </html>

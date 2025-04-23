@@ -24,7 +24,6 @@ from Image_Classification_AI import settings
 urlpatterns = [
     path('admin/',   admin.site.urls),
     path('',         include('image_classification.urls')),    # ← points “/” to home
-    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:

@@ -7,13 +7,14 @@
 <body>
     <h1>Welcome to Celebrity Face Recognition</h1>
 
-    {% if user.is_authenticated %}
-        <p>Hello, {{ user.username }}! You are logged in.</p>
-        <a href="{% url 'upload' %}">Upload an Image</a><br>
+    {% if profile %}
+        Welcome, {{ profile.username }} |
+        <a href="{% url 'upload' %}">Upload</a> |
         <a href="{% url 'logout' %}">Logout</a>
     {% else %}
-        <a href="{% url 'login' %}">Login</a><br>
-        <a href="{% url 'register' %}">Register</a>
+        <a href="{% url 'register' %}">Register</a> |
+        <a href="{% url 'login' %}">Login</a> |
+        <a href="{% url 'guest_upload' %}">Continue as Guest</a>
     {% endif %}
 </body>
 </html>

@@ -58,4 +58,4 @@ def predict_celebrity(file_obj):
     # print(f"DEBUG ▶️ Prediction: {name} @ {confidence:.2f}%")
 
     # 5️⃣ Return result
-    return {'celebrity': name, 'confidence': confidence}
+    return {'celebrity': name, 'confidence': round(confidence, 2)}

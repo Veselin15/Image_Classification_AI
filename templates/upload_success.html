@@ -9,6 +9,13 @@
     <p>Predicted Celebrity: {{ result.celebrity }}</p>
     <p>Confidence: {{ result.confidence }}%</p>
 
-    <a href="{% url 'home' %}">Go back to Home</a>
+    <!-- If the user is a guest, redirect to the guest upload page -->
+    {% if guest %}
+        <a href="{% url 'guest_upload' %}">Upload another image as Guest</a>
+    {% else %}
+        <!-- If the user is authenticated, stay logged in and upload another image -->
+        <a href="{% url 'upload' %}">Upload another image</a>
+    {% endif %}
+    <p><a href="{% url 'home' %}">Go to homepage</a></p>
 </body>
 </html>

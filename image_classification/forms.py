@@ -10,11 +10,10 @@ class UploadForm(forms.ModelForm):
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'autocomplete': 'off'}))
-    email = forms.EmailField(required=True)
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'password']
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Username')
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    password = forms.CharField(widget=forms.PasswordInput())
