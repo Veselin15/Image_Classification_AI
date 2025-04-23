@@ -5,7 +5,13 @@
   <title>Upload Image</title>
 </head>
 <body>
-    <h2>{% if guest %}Guest Upload{% else %}Upload an Image{% endif %}</h2>
+    <h1>Upload an Image</h1>
+
+    {% if profile %}
+        <p>You are logged in as: {{ profile.username }}</p>
+    {% else %}
+        <p>You are logged in as a guest.</p>
+    {% endif %}
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -13,11 +19,5 @@
         <button type="submit">Upload</button>
     </form>
 
-    <br>
-    {% if guest %}
-        <p>You are uploading as a guest. You will not have a profile associated with this upload.</p>
-    {% else %}
-        <p>Logged in as: {{ profile.username }}</p>
-    {% endif %}
 </body>
 </html>

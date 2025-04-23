@@ -24,6 +24,13 @@ def home(request):
     return render(request, 'home.html', {'profile': profile})
 
 def guest_upload(request):
+    profile = None
+    if 'profile_id' in request.session:
+        try:
+            profile = Profile.objects.get(id=request.session['profile_id'])
+        except Profile.DoesNotExist:
+            pass
+
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -49,15 +56,14 @@ def guest_upload(request):
     else:
         form = UploadForm()
 
-    return render(request, 'upload.html', {'form': form, 'guest': True})  # Mark as guest upload
+    return render(request, 'upload.html', {'form': form, 'guest': True, 'profile': profile})  # Pass profile
 
-@login_required
 def upload_image(request):
+    profile = Profile.objects.get(id=request.session['profile_id'])  # Get profile from session
+
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            # For authenticated users, get the profile from the session
-            profile = Profile.objects.get(id=request.session['profile_id'])
             upload = form.save(commit=False)
             upload.user = profile  # Assign the Profile to the upload
 
@@ -73,8 +79,8 @@ def upload_image(request):
             return render(request, 'upload_success.html', {'result': result, 'guest': False})
     else:
         form = UploadForm()
-    return render(request, 'upload.html', {'form': form, 'guest': False})  # Mark as authenticated upload
 
+    return render(request, 'upload.html', {'form': form, 'guest': False, 'profile': profile})  # Pass profile
 @login_required
 def upload_success(request):
     profile_id = request.session.get('profile_id')
