@@ -1,20 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Celebrity AI Home</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Celebrity AI Home{% endblock %}
+
+{% block content %}
+
     <h1>Welcome to Celebrity Face Recognition</h1>
 
     {% if profile %}
-        Welcome, {{ profile.username }} |
-        <a href="{% url 'upload' %}">Upload</a> |
-        <a href="{% url 'logout' %}">Logout</a>
+        <p>Welcome, <strong>{{ profile.username }}</strong></p>
+        <a href="{% url 'upload' %}" class="button">Upload</a>
+        <a href="{% url 'logout' %}" class="button">Logout</a>
     {% else %}
-        <a href="{% url 'register' %}">Register</a> |
-        <a href="{% url 'login' %}">Login</a> |
-        <a href="{% url 'guest_upload' %}">Continue as Guest</a>
+        <a href="{% url 'register' %}" class="button">Register</a>
+        <a href="{% url 'login' %}" class="button">Login</a>
+        <a href="{% url 'guest_upload' %}" class="button">Continue as Guest</a>
     {% endif %}
-</body>
-</html>
+
+    <br><br>
+
+    {% if request.session.profile_id %}
+        <a href="{% url 'upload_list' %}" class="button">View Uploads</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="button">Login to view uploads</a>
+    {% endif %}
+
+{% endblock %}

@@ -9,7 +9,7 @@ from django.conf import settings
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
 # ── Load your SVM+scaler+classes once at import ──
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'model', 'facenet_svm.pkl')
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'model', 'facenet_svm_extended.pkl')
 # print(f"DEBUG ▶️ Loading model from: {MODEL_PATH}")
 model_data = joblib.load(MODEL_PATH)
 svm         = model_data['svm']

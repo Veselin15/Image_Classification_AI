@@ -1,21 +1,25 @@
-<!-- upload_success.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Upload Success</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Upload Success{% endblock %}
+
+{% block content %}
+
     <h1>Upload Successful!</h1>
     <p>Predicted Celebrity: {{ result.celebrity }}</p>
     <p>Confidence: {{ result.confidence }}%</p>
 
+    <!-- Show uploaded image -->
+    <h3>Uploaded Image:</h3>
+    <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 300px;">
+
     <!-- If the user is a guest, redirect to the guest upload page -->
     {% if guest %}
-        <a href="{% url 'guest_upload' %}">Upload another image as Guest</a>
+        <p><a href="{% url 'guest_upload' %}">Upload another image as Guest</a></p>
     {% else %}
         <!-- If the user is authenticated, stay logged in and upload another image -->
-        <a href="{% url 'upload' %}">Upload another image</a>
+        <p><a href="{% url 'upload' %}">Upload another image</a></p>
     {% endif %}
+
     <p><a href="{% url 'home' %}">Go to homepage</a></p>
-</body>
-</html>
+
+{% endblock %}

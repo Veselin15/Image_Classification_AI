@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload List{% endblock %}
+
+{% block content %}
+    <h1><a href="{% url 'home' %}">MySite</a></h1>
+    <h2>All Uploads (Sorted by Confidence)</h2>
+
+    <table class="upload-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Image</th>
+                <th>Predicted Celebrity</th>
+                <th>Confidence</th>
+                <th>Uploaded At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for upload in uploads %}
+                <tr>
+                    <td>{{ upload.user.username }}</td>
+                    <td><img src="{{ upload.image.url }}" alt="upload" style="max-width: 100px;"></td>
+                    <td>{{ upload.predicted_celebrity }}</td>
+                    <td>{{ upload.confidence|floatformat:2 }}%</td>
+                    <td>{{ upload.uploaded_at }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

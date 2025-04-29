@@ -13,6 +13,9 @@ class RegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'password']
+        help_texts = {
+            'username': None,
+        }
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Username')

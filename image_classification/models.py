@@ -11,7 +11,7 @@ class Upload(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 class Profile(models.Model):
-    username = models.CharField(max_length=100)
+    username = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
 
     def set_password(self, raw_password):

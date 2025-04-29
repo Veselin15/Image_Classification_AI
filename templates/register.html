@@ -1,16 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-          <h2>Register</h2>
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+
+    <h2>Register</h2>
+
+    {% if messages %}
+        <ul style="color: red;">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Register</button>
     </form>
-<a href="{% url 'login' %}">Already have an account? Login</a>
-</body>
-</html>
+
+    <a href="{% url 'login' %}">Already have an account? Login</a>
+
+{% endblock %}
