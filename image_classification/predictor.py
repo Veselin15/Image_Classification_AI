@@ -8,54 +8,79 @@ from PIL import Image
 from django.conf import settings
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
-# ── Load your SVM+scaler+classes once at import ──
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'model', 'facenet_svm_extended.pkl')
-# print(f"DEBUG ▶️ Loading model from: {MODEL_PATH}")
-model_data = joblib.load(MODEL_PATH)
-svm         = model_data['svm']
-scaler      = model_data['scaler']
-class_dict  = model_data['class_dict']
-
-# ── Init Face detector & FaceNet once ──
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-mtcnn  = MTCNN(
-    image_size=160,
-    margin=20,         # more padding around the detected face
-    min_face_size=10,  # detect smaller faces
-    keep_all=False,
-    device=device
-)
-resnet = InceptionResnetV1(pretrained='vggface2').eval().to(device)
+# --- Lazy-loaded global variables ---
+# We will initialize these to None and load them on the first request.
+svm = None
+scaler = None
+class_dict = None
+mtcnn = None
+resnet = None
+device = None
 
 
-def predict_celebrity(file_obj):
+def _initialize_models():
     """
-    file_obj can be an InMemoryUploadedFile or a path-like; PIL.Image.open handles both.
-    Returns dict: { 'celebrity': str, 'confidence': float }
+    Loads and initializes all models and data.
+    This function is called only once on the first prediction request.
     """
-    # 1️⃣ Load + inspect image
-    img = Image.open(file_obj).convert('RGB')
-    # print("DEBUG ▶️ Input image size:", img.size)
+    global svm, scaler, class_dict, mtcnn, resnet, device
 
-    # 2️⃣ Face detection
-    face_tensor = mtcnn(img)
-    # print("DEBUG ▶️ face_tensor:", face_tensor)
-    if face_tensor is None:
-        # print("DEBUG ▶️ No face detected — returning Unknown")
-        return {'celebrity': 'Unknown', 'confidence': 0.0}
+    # Check if already initialized to prevent reloading
+    if svm is not None:
+        return
 
-    # 3️⃣ Compute embedding
+    print("INFO: Initializing models for the first time...")
+
+    # ── Load your SVM+scaler+classes ──
+    MODEL_PATH = os.path.join(settings.BASE_DIR, 'model', 'facenet_svm_extended.pkl')
+    model_data = joblib.load(MODEL_PATH)
+    svm = model_data['svm']
+    scaler = model_data['scaler']
+    class_dict = model_data['class_dict']
+
+    # ── Init Face detector & FaceNet ──
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    mtcnn = MTCNN(
+        image_size=160,
+        margin=20,
+        min_face_size=10,
+        keep_all=False,
+        device=device
+    )
+    resnet = InceptionResnetV1(pretrained='vggface2').eval().to(device)
+    print("INFO: Models initialized successfully.")
+
+
+def predict_celebrity(image_path):
+    """
+    Predicts the celebrity in a given image.
+    """
+    # Ensure models are loaded before proceeding
+    _initialize_models()
+
+    try:
+        img = Image.open(image_path).convert('RGB')
+    except Exception as e:
+        return f"Error opening image: {e}", None
+
+    # Detect face
+    face = mtcnn(img)
+    if face is None:
+        return "No face detected", None
+
+    # Generate embedding
     with torch.no_grad():
-        emb = resnet(face_tensor.unsqueeze(0).to(device)).cpu().numpy().flatten()
-    # print("DEBUG ▶️ Embedding vector shape:", emb.shape)
+        embedding = resnet(face.unsqueeze(0).to(device))
 
-    # 4️⃣ Scale + predict
-    emb_scaled = scaler.transform([emb])
-    probs      = svm.predict_proba(emb_scaled)[0]
-    top_idx    = int(np.argmax(probs))
-    name       = [k for k, v in class_dict.items() if v == top_idx][0]
-    confidence = probs[top_idx] * 100
-    # print(f"DEBUG ▶️ Prediction: {name} @ {confidence:.2f}%")
+    # Scale embedding and predict
+    embedding_scaled = scaler.transform(embedding.cpu().numpy())
+    prediction_proba = svm.predict_proba(embedding_scaled)[0]
 
-    # 5️⃣ Return result
-    return {'celebrity': name, 'confidence': round(confidence, 2)}
+    # Get the top prediction
+    max_proba_idx = np.argmax(prediction_proba)
+    confidence = prediction_proba[max_proba_idx]
+
+    # Use the class dictionary to get the name
+    predicted_class_name = class_dict.get(max_proba_idx, "Unknown")
+
+    return predicted_class_name, confidence
