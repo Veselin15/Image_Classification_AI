@@ -1,6 +1,5 @@
 from django import forms
 from .models import Upload
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 
 class UploadForm(forms.ModelForm):
@@ -8,14 +7,11 @@ class UploadForm(forms.ModelForm):
         model = Upload
         fields = ['image']
 
-class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'autocomplete': 'off'}))
-    class Meta:
-        model = User
-        fields = ['username', 'password']
-        help_texts = {
-            'username': None,
-        }
+# Convert RegisterForm to a standard Form for maximum efficiency.
+# This prevents the check framework from doing heavy model validation.
+class RegisterForm(forms.Form):
+    username = forms.CharField(max_length=150, required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Username')

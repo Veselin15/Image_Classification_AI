@@ -2,10 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db import IntegrityError
 from django.contrib import messages
 from .forms import UploadForm, RegisterForm, LoginForm
-# We REMOVE the predictor import from here
 from .models import Upload, Profile
 
 
@@ -14,7 +12,6 @@ def home(request):
 
 
 def guest_upload(request):
-    # We IMPORT the predictor function HERE, only when needed.
     from .predictor import predict_celebrity
 
     if request.method == 'POST':
@@ -42,7 +39,6 @@ def guest_upload(request):
 
 @login_required
 def upload_image(request):
-    # We also IMPORT the predictor function HERE.
     from .predictor import predict_celebrity
 
     if request.method == 'POST':
@@ -69,17 +65,20 @@ def upload_image(request):
 
 def register(request):
     if request.method == 'POST':
+        # Use the new, lightweight form
         form = RegisterForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            try:
+
+            # Manually check if the user already exists
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists.')
+            else:
                 user = User.objects.create_user(username=username, password=password)
                 Profile.objects.create(user=user)
                 messages.success(request, 'Registration successful! Please log in.')
                 return redirect('login')
-            except IntegrityError:
-                messages.error(request, 'Username already exists.')
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
