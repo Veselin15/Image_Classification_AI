@@ -1,35 +1,51 @@
 # recognition/predictor.py
 
 import os
-import joblib
-import numpy as np
-import torch
 from PIL import Image
 from django.conf import settings
-from facenet_pytorch import MTCNN, InceptionResnetV1
 
-# --- Lazy-loaded global variables ---
-# We will initialize these to None and load them on the first request.
+# --- Lazy-loaded global variables for models AND modules ---
+# We will initialize everything to None and load them on the first request.
 svm = None
 scaler = None
 class_dict = None
 mtcnn = None
 resnet = None
 device = None
+torch = None
+np = None
+joblib = None
+MTCNN = None
+InceptionResnetV1 = None
 
 
 def _initialize_models():
     """
-    Loads and initializes all models and data.
+    Loads and initializes all libraries and models.
     This function is called only once on the first prediction request.
     """
+    # Make all globals modifiable
     global svm, scaler, class_dict, mtcnn, resnet, device
+    global torch, np, joblib, MTCNN, InceptionResnetV1
 
     # Check if already initialized to prevent reloading
     if svm is not None:
         return
 
-    print("INFO: Initializing models for the first time...")
+    print("INFO: Lazily importing heavy libraries and initializing models...")
+
+    # --- Import heavy libraries here, inside the function ---
+    import torch as torch_local
+    import numpy as np_local
+    import joblib as joblib_local
+    from facenet_pytorch import MTCNN as MTCNN_local, InceptionResnetV1 as InceptionResnetV1_local
+
+    # Assign the imported modules to our global variables
+    torch = torch_local
+    np = np_local
+    joblib = joblib_local
+    MTCNN = MTCNN_local
+    InceptionResnetV1 = InceptionResnetV1_local
 
     # ── Load your SVM+scaler+classes ──
     MODEL_PATH = os.path.join(settings.BASE_DIR, 'model', 'facenet_svm_extended.pkl')
@@ -55,18 +71,19 @@ def predict_celebrity(image_path):
     """
     Predicts the celebrity in a given image.
     """
-    # Ensure models are loaded before proceeding
+    # This call will ensure all modules and models are loaded.
     _initialize_models()
 
     try:
         img = Image.open(image_path).convert('RGB')
     except Exception as e:
-        return f"Error opening image: {e}", None
+        # Use a dictionary for a consistent return format
+        return {"error": f"Error opening image: {e}"}
 
     # Detect face
     face = mtcnn(img)
     if face is None:
-        return "No face detected", None
+        return {"error": "No face detected"}
 
     # Generate embedding
     with torch.no_grad():
@@ -83,4 +100,7 @@ def predict_celebrity(image_path):
     # Use the class dictionary to get the name
     predicted_class_name = class_dict.get(max_proba_idx, "Unknown")
 
-    return predicted_class_name, confidence
+    return {
+        "celebrity": predicted_class_name,
+        "confidence": float(confidence)
+    }
