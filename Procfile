@@ -1,0 +1,1 @@
+web: gunicorn Image_Classification_AI.wsgi --log-file -
