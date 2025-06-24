@@ -1,15 +1,17 @@
 # urls.py
 from django.urls import path
 from . import views
-from django.conf import settings
-from django.conf.urls.static import static
+
+# Note: The settings and static imports are not needed here
+# as they are handled in the project-level urls.py
+
 urlpatterns = [
-    path('',         views.home,           name='home'),
-    path('upload/',  views.upload_image,   name='upload'),
+    path('', views.home, name='home'),
+    path('upload/', views.upload_image, name='upload_image'), # Renamed for clarity
     path('guest/upload/', views.guest_upload, name='guest_upload'),
-    path('success/', views.upload_success, name='upload_success'),
+    # The 'upload_success' path is removed as it's no longer a separate view
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
-    path('upload_list/', views.upload_list, name='upload_list'),
+    # The 'upload_list' path is removed as the view does not exist
 ]
